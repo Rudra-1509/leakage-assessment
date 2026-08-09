@@ -1,0 +1,62 @@
+[
+    {
+        "ciphertext": "d9f8d27eb4057b9abe30fa38ec8fee7c",
+        "faultytext": "d9f8d27e3f057b9abe30fa38ec8fee7c",
+        "fault_location": 4,
+        "fault_value": 139
+    },
+    {
+        "ciphertext": "4e4f32314923ee4069a8086f7746ddb9",
+        "faultytext": "4e4f32314923ee4069a8e86f7746ddb9",
+        "fault_location": 10,
+        "fault_value": 224
+    },
+    {
+        "ciphertext": "3b0aa95986871f81052e195ab2f0ccb1",
+        "faultytext": "3b0aa95986871f4c052e195ab2f0ccb1",
+        "fault_location": 7,
+        "fault_value": 205
+    },
+    {
+        "ciphertext": "f70d62e322b28c78dfffc002b60763f9",
+        "faultytext": "f70d62e3bfb28c78dfffc002b60763f9",
+        "fault_location": 4,
+        "fault_value": 157
+    },
+    {
+        "ciphertext": "31de30cfa74ad5eead54c946c25300ad",
+        "faultytext": "31de30cfa74ad5eead549f46c25300ad",
+        "fault_location": 10,
+        "fault_value": 86
+    },
+    {
+        "ciphertext": "0b261982513ca893ee5fddaebbd8f4f5",
+        "faultytext": "0b261982513ca893ee5fddaebbc2f4f5",
+        "fault_location": 13,
+        "fault_value": 26
+    },
+    {
+        "ciphertext": "a8db553304ca3b779c225e0d95de6fa3",
+        "faultytext": "a8db553304343b779c225e0d95de6fa3",
+        "fault_location": 5,
+        "fault_value": 254
+    },
+    {
+        "ciphertext": "3d61799bde69ede32f1319dcc24cde21",
+        "faultytext": "3d6179dfde69ede32f1319dcc24cde21",
+        "fault_location": 3,
+        "fault_value": 68
+    },
+    {
+        "ciphertext": "218898186b0de96de5dce7645a36ff3a",
+        "faultytext": "21889818ab0de96de5dce7645a36ff3a",
+        "fault_location": 4,
+        "fault_value": 192
+    },
+    {
+        "ciphertext": "7832b1014e2531d77dc843f633a52072",
+        "faultytext": "7832b1014e3731d77dc843f633a52072",
+        "fault_location": 5,
+        "fault_value": 18
+    }
+]

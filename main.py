@@ -1,4 +1,3 @@
-from src.tests.test_generator import test_generator
-
+from src.tests.test_trainer import test_trainer
 if __name__ == "__main__":
-    test_generator()
+    test_trainer()
