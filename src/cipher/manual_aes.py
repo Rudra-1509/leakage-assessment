@@ -39,6 +39,7 @@ state then enters the round-9 AddRoundKey and subsequently round 10.
 
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
@@ -507,6 +508,7 @@ def aes128_encrypt(
 # ----------------------------------------------------------------------
 
 def self_test() -> None:
+    """Run the standard FIPS-197 AES-128 known-answer test."""
     key = bytes.fromhex(
         "000102030405060708090A0B0C0D0E0F"
     )
@@ -531,13 +533,8 @@ def self_test() -> None:
         f"actual:   {ciphertext.hex()}"
     )
 
-    # AES-128 must expose:
-    # round 0: 1 state
-    # rounds 1-9: 4 states each
-    # round 10: 3 states
     assert len(trace) == 40, f"Unexpected trace length: {len(trace)}"
 
-    # Confirm the ninth-round internal state exists.
     r9 = aes.get_round_state(trace, 9, "mix_columns")
     assert len(r9) == 16
 
@@ -546,5 +543,169 @@ def self_test() -> None:
     print(f"Captured internal states: {len(trace)}")
 
 
+# ----------------------------------------------------------------------
+# Human-readable state display
+# ----------------------------------------------------------------------
+
+def print_state(state: bytes, title: str = "") -> None:
+    """
+    Print an AES state as a 4x4 matrix.
+
+    AES stores the state column-major:
+        state[r + 4*c]
+
+    The displayed matrix is therefore:
+        s00 s01 s02 s03
+        s10 s11 s12 s13
+        s20 s21 s22 s23
+        s30 s31 s32 s33
+    """
+    if len(state) != 16:
+        raise ValueError("AES state must contain exactly 16 bytes.")
+
+    if title:
+        print(f"\n{title}")
+
+    for row in range(4):
+        values = [
+            state[4 * col + row]
+            for col in range(4)
+        ]
+        print("  " + " ".join(f"{x:02x}" for x in values))
+
+
+def print_trace(trace: List[AESStage]) -> None:
+    """
+    Print every recorded AES internal state.
+
+    Round 9 is explicitly highlighted because it is the intended
+    fault-injection round for this project.
+    """
+    current_round = None
+
+    for item in trace:
+        if item.round != current_round:
+            current_round = item.round
+
+            if current_round == 0:
+                print("\n========== INITIAL TRANSFORMATION ==========")
+            elif current_round == 9:
+                print("\n========== ROUND 9 -- FAULT TARGET ==========")
+            elif current_round == 10:
+                print("\n========== ROUND 10 -- FINAL ROUND ==========")
+            else:
+                print(f"\n========== ROUND {current_round} ==========")
+
+        print_state(
+            item.state,
+            f"Round {item.round} -> {item.stage}"
+        )
+
+
+# ----------------------------------------------------------------------
+# Command-line interface
+# ----------------------------------------------------------------------
+
+def _parse_hex_16_bytes(value: str, name: str) -> bytes:
+    """
+    Parse exactly 32 hexadecimal characters into 16 bytes.
+
+    AES-128 requires both plaintext and key to be exactly 16 bytes.
+    """
+    value = value.strip().replace(" ", "")
+
+    if len(value) != 32:
+        raise argparse.ArgumentTypeError(
+            f"{name} must contain exactly 32 hexadecimal characters "
+            f"(16 bytes)."
+        )
+
+    try:
+        result = bytes.fromhex(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(
+            f"{name} must contain only hexadecimal characters."
+        ) from exc
+
+    if len(result) != 16:
+        raise argparse.ArgumentTypeError(
+            f"{name} must decode to exactly 16 bytes."
+        )
+
+    return result
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Manual AES-128 encryption with internal-state tracing. "
+            "Useful for leakage and fault-analysis experiments."
+        )
+    )
+
+    parser.add_argument(
+        "--key",
+        required=False,
+        type=lambda value: _parse_hex_16_bytes(value, "Key"),
+        help=(
+            "AES-128 key as 32 hexadecimal characters. "
+            "Example: 000102030405060708090a0b0c0d0e0f"
+        ),
+    )
+
+    parser.add_argument(
+        "--plaintext",
+        required=False,
+        type=lambda value: _parse_hex_16_bytes(value, "Plaintext"),
+        help=(
+            "Plaintext as 32 hexadecimal characters. "
+            "Example: 00112233445566778899aabbccddeeff"
+        ),
+    )
+
+    parser.add_argument(
+        "--trace",
+        action="store_true",
+        help="Print every internal AES state.",
+    )
+
+    parser.add_argument(
+        "--self-test",
+        action="store_true",
+        help="Run the FIPS-197 AES-128 known-answer test.",
+    )
+
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if args.self_test:
+        self_test()
+        return
+
+    if args.key is None or args.plaintext is None:
+        parser.error(
+            "--key and --plaintext are required unless --self-test is used."
+        )
+
+    aes = ManualAES128(args.key)
+
+    ciphertext, trace = aes.encrypt(
+        args.plaintext,
+        return_trace=True,
+    )
+
+    print("\n========== AES-128 RESULT ==========")
+    print(f"Key:        {args.key.hex()}")
+    print(f"Plaintext:  {args.plaintext.hex()}")
+    print(f"Ciphertext: {ciphertext.hex()}")
+
+    if args.trace:
+        print_trace(trace)
+
+
 if __name__ == "__main__":
-    self_test()
+    main()
