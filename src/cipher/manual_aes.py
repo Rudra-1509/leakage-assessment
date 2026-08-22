@@ -1,8 +1,6 @@
 """
 Manual AES-128 implementation for leakage/fault-analysis experiments.
 
-This file intentionally does NOT use Crypto.Cipher.AES.
-
 AES-128 structure:
     Initial: AddRoundKey
     Rounds 1-9:
@@ -10,31 +8,10 @@ AES-128 structure:
     Round 10:
         SubBytes -> ShiftRows -> AddRoundKey
 
-The implementation keeps every intermediate state so a fault can be
-injected during encryption rather than only after ciphertext generation.
-
 State representation:
     16 bytes in AES column-major order:
         state[r + 4*c]
 
-Fault injection:
-    fault = {
-        "round": 9,
-        "stage": "after_mix_columns",
-        "byte_index": 0,
-        "fault_value": 0x01,
-    }
-
-Supported stages:
-    "after_sub_bytes"
-    "after_shift_rows"
-    "after_mix_columns"
-    "after_add_round_key"
-    "before_add_round_key"
-
-For a classic 9th-round fault experiment, "after_mix_columns" or
-"before_add_round_key" is usually the useful point because the modified
-state then enters the round-9 AddRoundKey and subsequently round 10.
 """
 
 from __future__ import annotations
