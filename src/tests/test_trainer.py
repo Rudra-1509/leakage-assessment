@@ -12,14 +12,14 @@ def test_trainer():
 
     generator = DatasetGenerator()
 
-    dataset = generator.generate(samples=500, fault_location=5, f1=0x01, f2=0x02)
+    dataset = generator.generate(samples=500, fault_location=10, f1=0x01, f2=0x02)
 
     processor = DatasetProcessor()
 
     X, y = processor.prepare(dataset)
     X = processor.normalize(X)
-
-    splitter = DatasetSplitter()
+    
+    splitter = DatasetSplitter()    
 
     X_train, X_val, y_train, y_val = splitter.split(X, y)
 
